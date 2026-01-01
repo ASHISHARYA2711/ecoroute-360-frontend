@@ -5,7 +5,7 @@ export interface Bin {
   binId: string;
   currentFill: number;
   gasLevel: number;
-  status: 'CRITICAL' | 'NORMAL';
+  status: 'CRITICAL' | 'NORMAL' | 'EMPTY';
   location: {
     lat: number;
     lng: number;

@@ -10,9 +10,9 @@ import {
 } from 'recharts';
 
 const COLORS = {
-  FULL: '#dc2626',
-  HALF: '#f59e0b',
-  EMPTY: '#16a34a',
+  CRITICAL: '#dc2626',
+  NORMAL: '#16a34a',
+  EMPTY: '#5e5e5eff'
 };
 
 const AnalyticsPage = () => {
@@ -26,9 +26,9 @@ const AnalyticsPage = () => {
   }, []);
 
   const statusData = [
-    { name: 'Full', value: bins.filter(b => b.status === 'FULL').length },
-    { name: 'Half', value: bins.filter(b => b.status === 'HALF').length },
-    { name: 'Empty', value: bins.filter(b => b.status === 'EMPTY').length },
+    { name: 'CRITICAL', value: bins.filter(b => b.status === 'CRITICAL').length },
+    { name: 'NORMAL', value: bins.filter(b => b.status === 'NORMAL').length },
+    { name: 'EMPTY', value: bins.filter(b => b.status === 'EMPTY').length },
   ];
 
   return (
@@ -60,10 +60,10 @@ const AnalyticsPage = () => {
                 <Cell
                   key={index}
                   fill={
-                    entry.name === 'Full'
-                      ? COLORS.FULL
-                      : entry.name === 'Half'
-                      ? COLORS.HALF
+                    entry.name === 'CRITICAL'
+                      ? COLORS.CRITICAL
+                      : entry.name === 'NORMAL'
+                      ? COLORS.NORMAL
                       : COLORS.EMPTY
                   }
                 />

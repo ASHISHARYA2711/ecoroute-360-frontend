@@ -9,7 +9,9 @@ import {
 import L, { type LatLngExpression } from 'leaflet';
 
 import { RouteService } from '../../api/route.service';
-import type { Route } from '../../api/route.service';
+import type { Route, RouteBin } from '../../api/route.service';
+import { useSocket } from '../../hooks/useSocket';
+import type { Bin } from '../../api/bin.service';
 
 // Fix default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -25,6 +27,7 @@ L.Icon.Default.mergeOptions({
 const DriverMapPage = () => {
   const [route, setRoute] = useState<Route | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const socket = useSocket();
 
   useEffect(() => {
     RouteService.getRouteHistory()
@@ -38,17 +41,49 @@ const DriverMapPage = () => {
       .catch(() => setError('Failed to load route'));
   }, []);
 
+  // Real-time bin updates for route
+  useEffect(() => {
+    if (!socket || !route) return;
+
+    socket.on('binUpdated', (updatedBin: Bin) => {
+      // Check if bin is in current route
+      const binInRoute = route.bins.some((b) => b.binId === updatedBin.binId);
+      
+      if (binInRoute) {
+        console.log('📡 Driver Map: Bin in route updated:', updatedBin.binId, updatedBin.status);
+        
+        // Update route bins with new status
+        setRoute((prevRoute) => {
+          if (!prevRoute) return prevRoute;
+          
+          return {
+            ...prevRoute,
+            bins: prevRoute.bins.map((b) =>
+              b.binId === updatedBin.binId
+                ? { ...b, status: updatedBin.status, currentFill: updatedBin.currentFill }
+                : b
+            ),
+          };
+        });
+      }
+    });
+
+    return () => {
+      socket.off('binUpdated');
+    };
+  }, [socket, route]);
+
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
   if (!route) return <p>Loading route...</p>;
 
   const center: LatLngExpression = [
-    route.bins[0].latitude,
-    route.bins[0].longitude,
+    route.bins[0].location.lat,
+    route.bins[0].location.lng,
   ];
 
   const path: LatLngExpression[] = route.bins.map((b) => [
-    b.latitude,
-    b.longitude,
+    b.location.lat,
+    b.location.lng,
   ]);
 
   return (
@@ -68,14 +103,14 @@ const DriverMapPage = () => {
         {route.bins.map((bin, index) => (
           <Marker
             key={index}
-            position={[bin.latitude, bin.longitude]}
+            position={[bin.location.lat, bin.location.lng]}
           >
             <Popup>
               <strong>Stop {index + 1}</strong>
               <br />
-              Latitude: {bin.latitude}
+              Latitude: {bin.location.lat}
               <br />
-              Longitude: {bin.longitude}
+              Longitude: {bin.location.lng}
             </Popup>
           </Marker>
         ))}

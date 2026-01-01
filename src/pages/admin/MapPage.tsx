@@ -12,6 +12,7 @@ import { BinService } from '../../api/bin.service';
 import { RouteService } from '../../api/route.service';
 import type { Bin } from '../../api/bin.service';
 import type { Route } from '../../api/route.service';
+import { useSocket } from '../../hooks/useSocket';
 
 // Fix default marker icon issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -29,9 +30,11 @@ const MapPage = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [activeRoute, setActiveRoute] = useState<Route | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const socket = useSocket();
 
   const mapCenter: LatLngExpression = [20.5937, 78.9629];
 
+  // Initial load
   useEffect(() => {
     BinService.getAllBins()
       .then(setBins)
@@ -42,6 +45,26 @@ const MapPage = () => {
       .catch(() => {});
   }, []);
 
+  // Real-time bin updates via Socket.io
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('binUpdated', (updatedBin: Bin) => {
+      console.log('📡 Map: Real-time bin update:', updatedBin.binId);
+      
+      setBins((prevBins) =>
+        prevBins.map((b) =>
+          b.binId === updatedBin.binId ? updatedBin : b
+        )
+      );
+      // Map markers will re-render automatically with new data
+    });
+
+    return () => {
+      socket.off('binUpdated');
+    };
+  }, [socket]);
+
   const routePath: LatLngExpression[] | null = activeRoute
     ? activeRoute.geometry
       ? activeRoute.geometry.map(([lng, lat]) => [lat, lng])  // Use Mapbox geometry if available
@@ -51,6 +74,9 @@ const MapPage = () => {
   return (
     <div style={{ height: '80vh' }}>
       <h1>Map View</h1>
+      <p style={{ color: '#64748b', fontSize: 14, marginTop: 8 }}>
+        Real-time updates: {socket ? '✅ Connected' : '❌ Disconnected'}
+      </p>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
@@ -91,12 +117,33 @@ const MapPage = () => {
             ]}
           >
             <Popup>
-              <strong>Bin ID:</strong> {bin.binId} <br />
-              <strong>Status:</strong> {bin.status} <br />
-              <strong>Fill:</strong> {bin.currentFill}%<br />
-              {bin.lastWasteType && (
-                <><strong>Waste:</strong> {bin.lastWasteType}<br /></>
-              )}
+              <div>
+                <strong>{bin.binId}</strong>
+                <br />
+                Status:{' '}
+                <span
+                  style={{
+                    color:
+                      bin.status === 'CRITICAL'
+                        ? '#dc2626'
+                        : bin.status === 'EMPTY'
+                        ? '#64748b'
+                        : '#16a34a',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {bin.status}
+                </span>
+                <br />
+                Fill: {bin.currentFill}%
+                <br />
+                {bin.lastWasteType && (
+                  <>
+                    Waste: {bin.lastWasteType}
+                    <br />
+                  </>
+                )}
+              </div>
             </Popup>
           </Marker>
         ))}

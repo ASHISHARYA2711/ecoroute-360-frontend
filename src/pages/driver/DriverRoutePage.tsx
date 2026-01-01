@@ -47,10 +47,10 @@ const DriverRoutePage = () => {
         </h3>
 
         <p>
-          <strong>Latitude:</strong> {stop.latitude}
+          <strong>Latitude:</strong> {stop.location.lat}
         </p>
         <p>
-          <strong>Longitude:</strong> {stop.longitude}
+          <strong>Longitude:</strong> {stop.location.lng}
         </p>
 
         <button
