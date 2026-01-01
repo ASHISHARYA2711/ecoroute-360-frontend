@@ -16,11 +16,21 @@ const RoutesPage = () => {
     }
   };
 
+  // Default depot location (for route generation)
+  const DEFAULT_DEPOT = {
+    lat: 12.8230,
+    lng: 80.0444,
+  };
+
   const generateRoute = async () => {
     setLoading(true);
     setError(null);
     try {
-      await RouteService.generateOptimizedRoute();
+      // Generate route from default depot location
+      await RouteService.generateOptimizedRoute(
+        DEFAULT_DEPOT.lat,
+        DEFAULT_DEPOT.lng
+      );
       await loadHistory();
     } catch {
       setError('Failed to generate route');
