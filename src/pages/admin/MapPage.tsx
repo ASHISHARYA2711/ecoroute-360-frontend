@@ -42,8 +42,11 @@ const MapPage = () => {
       .catch(() => {});
   }, []);
 
-  const routePath: LatLngExpression[] | null =
-    activeRoute?.bins.map(b => [b.latitude, b.longitude]) ?? null;
+  const routePath: LatLngExpression[] | null = activeRoute
+    ? activeRoute.geometry
+      ? activeRoute.geometry.map(([lng, lat]) => [lat, lng])  // Use Mapbox geometry if available
+      : activeRoute.bins.map(b => [b.location.lat, b.location.lng])  // Fallback to bin locations
+    : null;
 
   return (
     <div style={{ height: '80vh' }}>
@@ -83,14 +86,17 @@ const MapPage = () => {
           <Marker
             key={bin._id}
             position={[
-              bin.location.latitude,
-              bin.location.longitude,
+              bin.location.lat,
+              bin.location.lng,
             ]}
           >
             <Popup>
-              <strong>Bin ID:</strong> {bin._id} <br />
+              <strong>Bin ID:</strong> {bin.binId} <br />
               <strong>Status:</strong> {bin.status} <br />
-              <strong>Fill:</strong> {bin.fillLevel}%
+              <strong>Fill:</strong> {bin.currentFill}%<br />
+              {bin.lastWasteType && (
+                <><strong>Waste:</strong> {bin.lastWasteType}<br /></>
+              )}
             </Popup>
           </Marker>
         ))}

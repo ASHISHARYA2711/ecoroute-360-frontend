@@ -6,6 +6,7 @@ import { useAuth } from './context/AuthContext';
 
 // ===== AUTH =====
 import LoginPage from './pages/auth/LoginPage';
+import SignupPage from './pages/auth/SignupPage';
 import NotFound from './pages/NotFound';
 
 // ===== ADMIN PAGES =====
@@ -27,7 +28,25 @@ import DriverDashboard from './pages/driver/DriverDashboard';
 import DriverRoutePage from './pages/driver/DriverRoutePage';
 
 function App() {
-  const { role } = useAuth();
+  const { role, isLoading } = useAuth();
+
+  /* ---------------------------
+     LOADING STATE
+  ---------------------------- */
+  if (isLoading) {
+    return (
+      <div style={{ 
+        height: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        fontSize: 18,
+        color: '#64748b'
+      }}>
+        Loading...
+      </div>
+    );
+  }
 
   /* ---------------------------
      NOT LOGGED IN → LOGIN ONLY
@@ -37,6 +56,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>

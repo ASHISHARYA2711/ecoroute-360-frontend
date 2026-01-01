@@ -14,9 +14,11 @@ const AdminDashboard = () => {
   }, []);
 
   const totalBins = bins.length;
-  const fullBins = bins.filter(b => b.status === 'FULL').length;
-  const halfBins = bins.filter(b => b.status === 'HALF').length;
-  const emptyBins = bins.filter(b => b.status === 'EMPTY').length;
+  const criticalBins = bins.filter(b => b.status === 'CRITICAL').length;
+  const normalBins = bins.filter(b => b.status === 'NORMAL').length;
+  const avgFillLevel = bins.length > 0
+    ? Math.round(bins.reduce((sum, b) => sum + b.currentFill, 0) / bins.length)
+    : 0;
 
   return (
     <div>
@@ -32,9 +34,9 @@ const AdminDashboard = () => {
         }}
       >
         <StatCard title="Total Bins" value={totalBins} color="#2563eb" />
-        <StatCard title="Full Bins" value={fullBins} color="#dc2626" />
-        <StatCard title="Half-filled Bins" value={halfBins} color="#f59e0b" />
-        <StatCard title="Empty Bins" value={emptyBins} color="#16a34a" />
+        <StatCard title="Critical Bins" value={criticalBins} color="#dc2626" />
+        <StatCard title="Normal Bins" value={normalBins} color="#16a34a" />
+        <StatCard title="Avg Fill Level" value={`${avgFillLevel}%`} color="#f59e0b" />
       </div>
     </div>
   );

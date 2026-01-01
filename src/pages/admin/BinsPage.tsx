@@ -4,14 +4,12 @@ import type { Bin } from '../../api/bin.service';
 
 const statusColor = (status: Bin['status']) => {
   switch (status) {
-    case 'FULL':
-      return '#dc2626';
-    case 'HALF':
-      return '#f59e0b';
-    case 'EMPTY':
-      return '#16a34a';
+    case 'CRITICAL':
+      return '#dc2626';  // Red
+    case 'NORMAL':
+      return '#16a34a';  // Green
     default:
-      return '#64748b';
+      return '#64748b';  // Gray
   }
 };
 
@@ -46,6 +44,8 @@ const BinsPage = () => {
               <th style={th}>Latitude</th>
               <th style={th}>Longitude</th>
               <th style={th}>Fill Level (%)</th>
+              <th style={th}>Gas Level (PPM)</th>
+              <th style={th}>Waste Type</th>
               <th style={th}>Status</th>
               <th style={th}>Last Updated</th>
             </tr>
@@ -62,10 +62,20 @@ const BinsPage = () => {
 
             {bins.map(bin => (
               <tr key={bin._id}>
-                <td style={td}>{bin._id}</td>
-                <td style={td}>{bin.location.latitude}</td>
-                <td style={td}>{bin.location.longitude}</td>
-                <td style={td}>{bin.fillLevel}</td>
+                <td style={td}>{bin.binId}</td>
+                <td style={td}>{bin.location.lat.toFixed(4)}</td>
+                <td style={td}>{bin.location.lng.toFixed(4)}</td>
+                <td style={td}>{bin.currentFill}%</td>
+                <td style={td}>{bin.gasLevel} PPM</td>
+                <td style={td}>
+                  {bin.lastWasteType ? (
+                    <span style={{ textTransform: 'capitalize' }}>
+                      {bin.lastWasteType} ({Math.round((bin.wasteConfidence || 0) * 100)}%)
+                    </span>
+                  ) : (
+                    <span style={{ color: '#94a3b8' }}>Not classified</span>
+                  )}
+                </td>
                 <td style={td}>
                   <span
                     style={{
