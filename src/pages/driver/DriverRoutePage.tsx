@@ -26,7 +26,9 @@ const DriverRoutePage = () => {
 
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
-  if (!route) return <p>Loading route...</p>;
+  if (!route || !route.bins || route.bins.length === 0) {
+    return <p>No route assigned or route has no bins.</p>;
+  }
 
   const stop = route.bins[currentStop];
 

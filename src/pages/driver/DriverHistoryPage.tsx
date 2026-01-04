@@ -50,8 +50,8 @@ const DriverHistoryPage = () => {
               {routes.map((route) => (
                 <tr key={route._id}>
                   <td style={td}>{route._id}</td>
-                  <td style={td}>{route.bins.length}</td>
-                  <td style={td}>{route.distance}</td>
+                  <td style={td}>{route.bins?.length || 0}</td>
+                  <td style={td}>{route.distance?.toFixed(2) || 'N/A'}</td>
                   <td style={td}>
                     {new Date(route.createdAt).toLocaleString()}
                   </td>

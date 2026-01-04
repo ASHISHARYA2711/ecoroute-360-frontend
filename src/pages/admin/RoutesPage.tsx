@@ -5,14 +5,19 @@ import type { Route } from '../../api/route.service';
 const RoutesPage = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadHistory = async () => {
     try {
       const data = await RouteService.getRouteHistory();
-      setRoutes(data);
-    } catch {
+      setRoutes(data || []);
+    } catch (err) {
+      console.error('Failed to load routes:', err);
       setError('Failed to load route history');
+      setRoutes([]);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -42,6 +47,10 @@ const RoutesPage = () => {
   useEffect(() => {
     loadHistory();
   }, []);
+
+  if (initialLoading) {
+    return <div style={{ padding: 20 }}>Loading routes...</div>;
+  }
 
   return (
     <div>
@@ -91,8 +100,8 @@ const RoutesPage = () => {
               {routes.map((r) => (
                 <tr key={r._id}>
                   <td style={td}>{r._id}</td>
-                  <td style={td}>{r.bins.length}</td>
-                  <td style={td}>{r.distance}</td>
+                  <td style={td}>{r.bins?.length || 0}</td>
+                  <td style={td}>{r.distance?.toFixed(2) || 'N/A'}</td>
                   <td style={td}>
                     {new Date(r.createdAt).toLocaleString()}
                   </td>

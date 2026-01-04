@@ -29,6 +29,7 @@ const MapPage = () => {
   const [bins, setBins] = useState<Bin[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [activeRoute, setActiveRoute] = useState<Route | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const socket = useSocket();
 
@@ -36,13 +37,10 @@ const MapPage = () => {
 
   // Initial load
   useEffect(() => {
-    BinService.getAllBins()
-      .then(setBins)
-      .catch(() => setError('Failed to load bins'));
-
-    RouteService.getRouteHistory()
-      .then(setRoutes)
-      .catch(() => {});
+    Promise.all([
+      BinService.getAllBins().then(setBins).catch(() => setError('Failed to load bins')),
+      RouteService.getRouteHistory().then(setRoutes).catch(() => {})
+    ]).finally(() => setLoading(false));
   }, []);
 
   // Real-time bin updates via Socket.io
@@ -68,8 +66,12 @@ const MapPage = () => {
   const routePath: LatLngExpression[] | null = activeRoute
     ? activeRoute.geometry
       ? activeRoute.geometry.map(([lng, lat]) => [lat, lng])  // Use Mapbox geometry if available
-      : activeRoute.bins.map(b => [b.location.lat, b.location.lng])  // Fallback to bin locations
+      : activeRoute.bins?.map(b => [b.location.lat, b.location.lng]) || []  // Fallback to bin locations
     : null;
+
+  if (loading) {
+    return <div style={{ padding: 20 }}>Loading map...</div>;
+  }
 
   return (
     <div style={{ height: '80vh' }}>
@@ -93,7 +95,7 @@ const MapPage = () => {
             <option value="">Select Route to Visualize</option>
             {routes.map(r => (
               <option key={r._id} value={r._id}>
-                Route {r._id.slice(-5)} ({r.bins.length} bins)
+                Route {r._id.slice(-5)} ({r.bins?.length || 0} bins)
               </option>
             ))}
           </select>
