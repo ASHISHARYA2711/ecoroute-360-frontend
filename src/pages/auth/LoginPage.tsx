@@ -144,25 +144,6 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <div
-          style={{
-            marginTop: 24,
-            padding: 16,
-            background: '#f7fafc',
-            borderRadius: 6,
-            fontSize: 13,
-          }}
-        >
-          <p style={{ margin: 0, fontWeight: 600, marginBottom: 8 }}>
-            Demo Credentials:
-          </p>
-          <p style={{ margin: 0, color: '#4a5568' }}>
-            <strong>Admin:</strong> admin@test.com / pass123
-          </p>
-          <p style={{ margin: 0, color: '#4a5568' }}>
-            <strong>Driver:</strong> driver@test.com / pass123
-          </p>
-        </div>
 
         {/* Signup Link */}
         <div
