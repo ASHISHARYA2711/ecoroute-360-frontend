@@ -31,4 +31,16 @@ export const RouteService = {
     const response = await api.get('/routes/history');
     return response.data.routes || [];
   },
+
+  getDriverActiveRoute: async (driverId: string): Promise<Route | null> => {
+    try {
+      const response = await api.get(`/routes/driver/${driverId}/active`);
+      return response.data.route;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
 };

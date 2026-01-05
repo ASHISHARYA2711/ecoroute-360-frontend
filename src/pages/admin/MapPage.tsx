@@ -25,6 +25,23 @@ L.Icon.Default.mergeOptions({
     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+// Depot/Collection Center location
+const DEPOT_LOCATION = {
+  lat: 12.8230,
+  lng: 80.0444,
+  name: 'Main Depot'
+};
+
+// Custom green icon for depot
+const depotIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 const MapPage = () => {
   const [bins, setBins] = useState<Bin[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -108,6 +125,26 @@ const MapPage = () => {
         style={{ height: '100%' }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+        {/* Depot Marker */}
+        <Marker 
+          position={[DEPOT_LOCATION.lat, DEPOT_LOCATION.lng]}
+          icon={depotIcon}
+        >
+          <Popup>
+            <div style={{ textAlign: 'center' }}>
+              <strong style={{ fontSize: 16 }}>🏢 {DEPOT_LOCATION.name}</strong>
+              <br />
+              <span style={{ color: '#16a34a', fontSize: 12 }}>
+                Collection Center
+              </span>
+              <br />
+              <span style={{ fontSize: 11, color: '#64748b' }}>
+                {DEPOT_LOCATION.lat.toFixed(4)}, {DEPOT_LOCATION.lng.toFixed(4)}
+              </span>
+            </div>
+          </Popup>
+        </Marker>
 
         {/* Bin Markers */}
         {bins.map(bin => (

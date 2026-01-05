@@ -8,18 +8,33 @@ const DriverRoutePage = () => {
   const [currentStop, setCurrentStop] = useState(0);
 
   useEffect(() => {
-    RouteService.getRouteHistory()
-      .then((routes) => {
-        if (routes.length > 0) {
-          setRoute(routes[0]); // latest route
+    // Get driverId from localStorage (set during login)
+    const driverId = localStorage.getItem('driverId');
+    
+    
+    if (!driverId) {
+      setError('Driver ID not found. Please log in again.');
+      return;
+    }
+
+    // Fetch driver's active route
+    RouteService.getDriverActiveRoute(driverId)
+      .then((activeRoute) => {
+        if (activeRoute) {
+          setRoute(activeRoute);
+        } else {
+          setError('No active route assigned');
         }
       })
-      .catch(() => setError('No route assigned'));
+      .catch((err) => {
+        console.error('Error loading route:', err);
+        setError('Failed to load route');
+      });
   }, []);
 
   const markCollected = () => {
     if (!route) return;
-    if (currentStop < route.bins.length - 1) {
+    if (currentStop < (route.bins?.length || 0) - 1) {
       setCurrentStop((prev) => prev + 1);
     }
   };
@@ -48,28 +63,36 @@ const DriverRoutePage = () => {
           Stop {currentStop + 1} of {route.bins.length}
         </h3>
 
-        <p>
-          <strong>Latitude:</strong> {stop.location.lat}
-        </p>
-        <p>
-          <strong>Longitude:</strong> {stop.location.lng}
-        </p>
+        <div style={{ marginTop: 16 }}>
+          <p>
+            <strong>Bin ID:</strong> {stop.binId}
+          </p>
+          <p>
+            <strong>Location:</strong> {stop.location.lat.toFixed(4)},{' '}
+            {stop.location.lng.toFixed(4)}
+          </p>
+        </div>
 
         <button
           onClick={markCollected}
+          disabled={currentStop === route.bins.length - 1}
           style={{
-            marginTop: 20,
-            width: '100%',
-            padding: '14px',
-            fontSize: 16,
+            marginTop: 16,
+            padding: '10px 16px',
             borderRadius: 8,
             border: 'none',
-            background: '#16a34a',
+            background:
+              currentStop === route.bins.length - 1 ? '#94a3b8' : '#16a34a',
             color: '#fff',
-            cursor: 'pointer',
+            cursor:
+              currentStop === route.bins.length - 1
+                ? 'not-allowed'
+                : 'pointer',
           }}
         >
-          Mark Collected
+          {currentStop === route.bins.length - 1
+            ? 'Route Complete!'
+            : 'Mark as Collected'}
         </button>
       </div>
     </div>

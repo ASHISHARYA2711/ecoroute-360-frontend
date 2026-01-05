@@ -22,6 +22,7 @@ export interface AuthResponse {
     name: string;
     email: string;
     role: 'admin' | 'driver';
+    driverId?: string | null;
   };
   data: {
     user: {
