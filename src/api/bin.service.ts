@@ -66,5 +66,10 @@ export const BinService = {
     const response = await api.get(`/bins/${binId}/prediction`);
     return response.data;
   },
+
+  resetBin: async (id: string) => {
+    const response = await api.put(`/bins/${id}/reset`);
+    return response.data;
+  },
 };
 

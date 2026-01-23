@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RouteService } from '../../api/route.service';
+import { BinService } from '../../api/bin.service';
 import type { Route } from '../../api/route.service';
 
 const DriverRoutePage = () => {
@@ -17,25 +18,51 @@ const DriverRoutePage = () => {
       return;
     }
 
-    // Fetch driver's active route
-    RouteService.getDriverActiveRoute(driverId)
-      .then((activeRoute) => {
-        if (activeRoute) {
-          setRoute(activeRoute);
-        } else {
-          setError('No active route assigned');
-        }
-      })
-      .catch((err) => {
-        console.error('Error loading route:', err);
-        setError('Failed to load route');
-      });
+    // Function to fetch active route
+    const fetchActiveRoute = () => {
+      RouteService.getDriverActiveRoute(driverId)
+        .then((activeRoute) => {
+          if (activeRoute) {
+            setRoute(activeRoute);
+            setCurrentStop(0); // Reset to first stop when new route arrives
+            setError(null); // Clear any previous errors
+          } else {
+            setError('No active route assigned');
+          }
+        })
+        .catch((err) => {
+          console.error('Error loading route:', err);
+          setError('Failed to load route');
+        });
+    };
+
+    // Initial fetch
+    fetchActiveRoute();
+
+    // Poll for new routes every 30 seconds
+    const pollInterval = setInterval(fetchActiveRoute, 30000);
+
+    // Cleanup
+    return () => clearInterval(pollInterval);
   }, []);
 
-  const markCollected = () => {
-    if (!route) return;
-    if (currentStop < (route.bins?.length || 0) - 1) {
-      setCurrentStop((prev) => prev + 1);
+  const markCollected = async () => {
+    if (!route || !route.bins) return;
+    
+    const currentBin = route.bins[currentStop];
+    
+    try {
+      // Call backend to reset the bin
+      await BinService.resetBin(currentBin.binId);
+      
+      // Move to next stop
+      if (currentStop < route.bins.length - 1) {
+        setCurrentStop((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error('Failed to reset bin:', error);
+      setError('Failed to mark bin as collected. Please try again.');
+      // Don't advance to next stop if reset failed
     }
   };
 
