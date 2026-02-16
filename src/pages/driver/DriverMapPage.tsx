@@ -83,10 +83,10 @@ const DriverMapPage = () => {
     route.bins[0].location.lng,
   ];
 
-  const path: LatLngExpression[] = route.bins.map((b) => [
-    b.location.lat,
-    b.location.lng,
-  ]);
+  const path: LatLngExpression[] =
+    route.geometry && route.geometry.length > 0
+      ? route.geometry.map(([lng, lat]) => [lat, lng]) // Connect using road geometry
+      : route.bins.map((b) => [b.location.lat, b.location.lng]); // Fallback to straight lines
 
   return (
     <div style={{ height: '80vh' }}>
