@@ -6,15 +6,18 @@ export interface RouteBin {
     lat: number;
     lng: number;
   };
+  status?: string;
+  currentFill?: number;
 }
 
 export interface Route {
   _id: string;
   bins: RouteBin[];
-  geometry?: [number, number][]; // Mapbox route geometry
+  geometry?: [number, number][];
   distance: number;
   duration: number;
   driverId: string;
+  status?: string;
   createdAt: string;
 }
 
@@ -42,5 +45,14 @@ export const RouteService = {
       }
       throw error;
     }
+  },
+
+  updateRouteStatus: async (routeId: string, status: string): Promise<void> => {
+    await api.put(`/routes/${routeId}/status`, { status: status.toUpperCase() });
+  },
+
+  cancelDriverPendingRoutes: async (driverId: string): Promise<number> => {
+    const response = await api.delete(`/routes/driver/${driverId}/pending`);
+    return response.data.cancelled || 0;
   },
 };
